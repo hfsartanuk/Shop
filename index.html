@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard — London Outlet</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .hidden { display: none !important; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body class="admin-body">
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-page">
+  <div class="login-box">
+    <h1>LONDON<span>OUTLET</span></h1>
+    <p>Admin Control Panel</p>
+    <div class="form-group" style="text-align:left">
+      <label>Password</label>
+      <input type="password" id="admin-pass" placeholder="Enter admin password (admin123)">
+    </div>
+    <button class="btn btn-red btn-full" onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="admin-dashboard" class="admin-layout hidden">
+  <div class="admin-sidebar">
+    <div class="logo">LONDON<span>OUTLET</span><br><span style="font-size:.7rem;color:var(--text-muted)">ADMIN</span></div>
+    <div class="admin-nav">
+      <div class="admin-nav-item active" onclick="switchTab('dashboard')">📊 Dashboard</div>
+      <div class="admin-nav-item" onclick="switchTab('orders')">📦 Orders</div>
+      <div class="admin-nav-item" onclick="switchTab('products')">🏷️ Products</div>
+      <div class="admin-nav-item" onclick="logout()" style="margin-top:2rem;color:var(--red)">🚪 Logout</div>
+    </div>
+  </div>
+  
+  <div class="admin-main">
+    
+    <!-- TAB: DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div class="admin-header">
+        <h1>Dashboard Overview</h1>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="label">Total Revenue</div>
+          <div class="value" id="stat-revenue">£0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Orders</div>
+          <div class="value" id="stat-orders">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Products</div>
+          <div class="value" id="stat-products">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Low Stock Items</div>
+          <div class="value" id="stat-low-stock" style="color:var(--warning)">0</div>
+        </div>
+      </div>
+      <div style="background:var(--dark2);padding:2rem;border-radius:10px;border:1px solid var(--border)">
+        <h3 style="margin-bottom:1rem">Quick Actions</h3>
+        <button class="btn btn-red" onclick="switchTab('products'); openProductModal()">+ Add New Product</button>
+      </div>
+    </div>
+
+    <!-- TAB: ORDERS -->
+    <div id="tab-orders" class="tab-content">
+      <div class="admin-header">
+        <h1>Orders</h1>
+        <button class="btn btn-outline" onclick="loadOrders()">Refresh</button>
+      </div>
+      <div style="background:var(--dark2);border-radius:10px;border:1px solid var(--border);overflow-x:auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody">
+            <!-- Orders injected here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: PRODUCTS -->
+    <div id="tab-products" class="tab-content">
+      <div class="admin-header">
+        <h1>Products</h1>
+        <button class="btn btn-red" onclick="openProductModal()">+ Add Product</button>
+      </div>
+      <div style="background:var(--dark2);border-radius:10px;border:1px solid var(--border);overflow-x:auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-tbody">
+            <!-- Products injected here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div id="product-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add Product</h2>
+      <button class="modal-close" onclick="closeProductModal()">×</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Product ID</label>
+        <input type="text" id="p-id" placeholder="LO-000">
+      </div>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="p-name">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="p-category">
+          <option value="shirts">Shirts</option>
+          <option value="tshirts">T-Shirts</option>
+          <option value="trousers">Trousers</option>
+          <option value="jackets">Jackets</option>
+          <option value="dresses">Dresses</option>
+          <option value="hoodies">Hoodies</option>
+          <option value="knitwear">Knitwear</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Price (£)</label>
+        <input type="number" id="p-price" step="0.01">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input type="text" id="p-desc">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Colors (comma separated)</label>
+        <input type="text" id="p-colors" placeholder="black, white, red">
+      </div>
+      <div class="form-group">
+        <label>Sizes (comma separated)</label>
+        <input type="text" id="p-sizes" placeholder="S, M, L, XL">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Stock</label>
+        <input type="number" id="p-stock">
+      </div>
+      <div class="form-group">
+        <label>Image URL</label>
+        <input type="text" id="p-image">
+      </div>
+    </div>
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="checkbox" id="p-featured" style="width:auto"> Featured Product
+      </label>
+    </div>
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="checkbox" id="p-active" checked style="width:auto"> Active (Visible in store)
+      </label>
+    </div>
+    <div style="margin-top:2rem;text-align:right">
+      <button class="btn btn-outline" onclick="closeProductModal()">Cancel</button>
+      <button class="btn btn-red" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+// Prevent double init from app.js if it causes issues
+let orders = [];
+let editingProductId = null;
+
+// Ensure products are loaded from localStorage if available
+async function initAdmin() {
+  const saved = localStorage.getItem('lo_products');
+  if (saved) {
+    products = JSON.parse(saved);
+  } else {
+    // try to load from JSON
+    try {
+      const res = await fetch('../data/products.json');
+      products = await res.json();
+      localStorage.setItem('lo_products', JSON.stringify(products));
+    } catch(e) {
+      console.error(e);
+      products = [];
+    }
+  }
+  loadOrders();
+  renderProducts();
+  renderDashboardStats();
+}
+
+function login() {
+  const pass = document.getElementById('admin-pass').value;
+  if (pass === 'admin123') {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('admin-dashboard').classList.remove('hidden');
+    initAdmin();
+  } else {
+    showToast('Invalid password', 'error');
+  }
+}
+
+function logout() {
+  document.getElementById('admin-dashboard').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('admin-pass').value = '';
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(tabId === 'dashboard') renderDashboardStats();
+}
+
+function loadOrders() {
+  orders = JSON.parse(localStorage.getItem('lo_orders') || '[]');
+  const tbody = document.getElementById('orders-tbody');
+  if (orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No orders found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = orders.map(o => {
+    const d = new Date(o.date).toLocaleString();
+    const items = o.items.map(i => `${i.qty}x ${i.name}`).join('<br>');
+    return `
+      <tr>
+        <td style="font-weight:700;font-family:monospace">${o.id}</td>
+        <td>${d}</td>
+        <td>${o.customer.fname} ${o.customer.lname}<br><span style="font-size:.75rem;color:var(--text-muted)">${o.customer.email}</span></td>
+        <td style="font-size:.8rem">${items}</td>
+        <td style="font-weight:700;color:var(--red)">£${o.total.toFixed(2)}</td>
+        <td><span class="badge badge-green">${o.status}</span></td>
+        <td>
+          <button class="btn btn-outline" style="padding:.3rem .6rem;font-size:.7rem" onclick="deleteOrder('${o.id}')">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function deleteOrder(id) {
+  if(!confirm('Are you sure you want to delete this order?')) return;
+  orders = orders.filter(o => o.id !== id);
+  localStorage.setItem('lo_orders', JSON.stringify(orders));
+  loadOrders();
+  renderDashboardStats();
+  showToast('Order deleted');
+}
+
+function renderProducts() {
+  const tbody = document.getElementById('products-tbody');
+  if (products.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No products found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = products.map(p => {
+    const statusBadge = p.active !== false ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Hidden</span>';
+    return `
+      <tr>
+        <td><img src="${p.images?.[0] || 'https://via.placeholder.com/50'}" alt=""></td>
+        <td><div style="font-weight:700">${p.name}</div><div style="font-size:.75rem;color:var(--text-muted)">${p.id}</div></td>
+        <td style="text-transform:capitalize">${p.category}</td>
+        <td style="font-weight:700">£${p.price.toFixed(2)}</td>
+        <td>${p.stock}</td>
+        <td>${statusBadge}</td>
+        <td>
+          <button class="btn btn-outline" style="padding:.3rem .6rem;font-size:.7rem" onclick="editProduct('${p.id}')">Edit</button>
+          <button class="btn btn-outline" style="padding:.3rem .6rem;font-size:.7rem;border-color:var(--red);color:var(--red)" onclick="deleteProduct('${p.id}')">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openProductModal(isEdit = false) {
+  document.getElementById('product-modal').classList.remove('hidden');
+  document.getElementById('modal-title').textContent = isEdit ? 'Edit Product' : 'Add New Product';
+  if (!isEdit) {
+    editingProductId = null;
+    document.getElementById('p-id').value = 'LO-' + String(products.length + 1).padStart(3, '0');
+    document.getElementById('p-name').value = '';
+    document.getElementById('p-category').value = 'shirts';
+    document.getElementById('p-price').value = '';
+    document.getElementById('p-desc').value = '';
+    document.getElementById('p-colors').value = '';
+    document.getElementById('p-sizes').value = '';
+    document.getElementById('p-stock').value = '10';
+    document.getElementById('p-image').value = '';
+    document.getElementById('p-featured').checked = false;
+    document.getElementById('p-active').checked = true;
+  }
+}
+
+function closeProductModal() {
+  document.getElementById('product-modal').classList.add('hidden');
+}
+
+function editProduct(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  editingProductId = id;
+  document.getElementById('p-id').value = p.id;
+  document.getElementById('p-name').value = p.name;
+  document.getElementById('p-category').value = p.category;
+  document.getElementById('p-price').value = p.price;
+  document.getElementById('p-desc').value = p.description || '';
+  document.getElementById('p-colors').value = (p.colors || []).join(', ');
+  document.getElementById('p-sizes').value = (p.sizes || []).join(', ');
+  document.getElementById('p-stock').value = p.stock || 0;
+  document.getElementById('p-image').value = (p.images || [])[0] || '';
+  document.getElementById('p-featured').checked = p.featured || false;
+  document.getElementById('p-active').checked = p.active !== false;
+  openProductModal(true);
+}
+
+function saveProduct() {
+  const p = {
+    id: document.getElementById('p-id').value.trim(),
+    name: document.getElementById('p-name').value.trim(),
+    category: document.getElementById('p-category').value,
+    price: parseFloat(document.getElementById('p-price').value) || 0,
+    description: document.getElementById('p-desc').value.trim(),
+    colors: document.getElementById('p-colors').value.split(',').map(s=>s.trim()).filter(Boolean),
+    sizes: document.getElementById('p-sizes').value.split(',').map(s=>s.trim()).filter(Boolean),
+    stock: parseInt(document.getElementById('p-stock').value) || 0,
+    images: [document.getElementById('p-image').value.trim()].filter(Boolean),
+    featured: document.getElementById('p-featured').checked,
+    active: document.getElementById('p-active').checked
+  };
+
+  if(!p.id || !p.name) { showToast('ID and Name are required', 'error'); return; }
+
+  if (editingProductId) {
+    const idx = products.findIndex(x => x.id === editingProductId);
+    if(idx > -1) products[idx] = p;
+  } else {
+    products.unshift(p);
+  }
+  
+  localStorage.setItem('lo_products', JSON.stringify(products));
+  closeProductModal();
+  renderProducts();
+  renderDashboardStats();
+  showToast('Product saved successfully');
+}
+
+function deleteProduct(id) {
+  if(!confirm('Are you sure you want to delete this product?')) return;
+  products = products.filter(x => x.id !== id);
+  localStorage.setItem('lo_products', JSON.stringify(products));
+  renderProducts();
+  renderDashboardStats();
+  showToast('Product deleted');
+}
+
+function renderDashboardStats() {
+  document.getElementById('stat-orders').textContent = orders.length;
+  document.getElementById('stat-products').textContent = products.length;
+  const rev = orders.reduce((sum, o) => sum + o.total, 0);
+  document.getElementById('stat-revenue').textContent = '£' + rev.toFixed(2);
+  const lowStock = products.filter(p => p.stock < 5).length;
+  document.getElementById('stat-low-stock').textContent = lowStock;
+}
+
+// Add an enter key listener for login
+document.getElementById('admin-pass').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      login();
+    }
+});
+</script>
+</body>
+</html>

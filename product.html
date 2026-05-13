@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product — London Outlet Hisaronu Online Shopping</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shipping-banner">🚚 FREE SHIPPING on orders over £50 | Standard: £2.99 | UPS Priority: £15</div>
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo-wrap">
+    <div class="logo-pattern">
+      <div class="logo-text-london">LONDON</div>
+      <div class="logo-text-outlet">OUTLET</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a><a href="shop.html">Shop</a>
+  </div>
+  <div class="nav-actions">
+    <button class="cart-btn" onclick="window.location='cart.html'">🛒 Cart <span class="cart-count" id="cart-count" style="display:none">0</span></button>
+  </div>
+</nav>
+
+<div class="container" style="padding:2rem">
+  <a href="shop.html" style="color:var(--text-muted);font-size:.85rem;display:inline-flex;align-items:center;gap:.3rem;margin-bottom:1.5rem">← Back to Shop</a>
+  <div class="product-detail" id="product-detail">
+    <div style="text-align:center;padding:4rem;color:var(--text-muted)">Loading...</div>
+  </div>
+
+  <!-- RELATED -->
+  <div style="margin-top:4rem">
+    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:1.5rem">You May Also Like</h2>
+    <div class="products-grid" id="related-grid"></div>
+  </div>
+</div>
+
+<footer><div class="footer-bottom">© 2026 London Outlet Hisaronu Online Shopping. All rights reserved.</div></footer>
+
+<script src="js/app.js"></script>
+<script>
+let currentProduct = null;
+let selectedColor = '';
+let selectedSize = '';
+let qty = 1;
+
+function initPage() {
+  const id = new URLSearchParams(window.location.search).get('id');
+  currentProduct = products.find(p => p.id === id);
+  if (!currentProduct) {
+    document.getElementById('product-detail').innerHTML = '<p style="color:var(--text-muted)">Product not found.</p>';
+    return;
+  }
+  document.title = `${currentProduct.name} — London Outlet`;
+  selectedColor = currentProduct.colors[0];
+  selectedSize = currentProduct.sizes[0];
+  renderProduct();
+  renderRelated();
+}
+
+function renderProduct() {
+  const p = currentProduct;
+  document.getElementById('product-detail').innerHTML = `
+    <div class="product-gallery">
+      <img id="main-img" src="${p.images[0]}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/400x530?text=No+Image'">
+    </div>
+    <div class="product-info">
+      <div class="product-category">${p.category}</div>
+      <h1>${p.name}</h1>
+      <div class="price">£${p.price.toFixed(2)}</div>
+      <p style="color:var(--text-muted);line-height:1.7;margin-bottom:1.5rem">${p.description}</p>
+
+      <div class="option-label">Colour — <span id="colour-label" style="color:var(--white);text-transform:capitalize">${selectedColor}</span></div>
+      <div class="colors-row" id="colors-row">
+        ${p.colors.map(c => `
+          <div class="color-dot ${c===selectedColor?'active':''}"
+            style="background:${getColor(c)}"
+            title="${c}" data-color="${c}"
+            onclick="selectColor('${c}')"></div>`).join('')}
+      </div>
+
+      <div class="option-label">Size</div>
+      <div class="sizes-row" id="sizes-row">
+        ${p.sizes.map(s => `
+          <button class="size-opt ${s===selectedSize?'active':''}" onclick="selectSize('${s}')">${s}</button>`).join('')}
+      </div>
+
+      <div class="qty-row">
+        <div class="option-label" style="margin-bottom:0">Quantity</div>
+        <div class="qty-controls">
+          <button onclick="changeQty(-1)">−</button>
+          <span id="qty-display">1</span>
+          <button onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+
+      <button class="btn btn-red btn-full" id="add-to-cart-btn" onclick="handleAddToCart()" style="font-size:1rem;padding:1rem">
+        🛒 Add to Cart — £${p.price.toFixed(2)}
+      </button>
+      <button class="btn btn-outline btn-full" onclick="handleAddToCart(); setTimeout(()=>window.location='cart.html',500)" style="margin-top:.7rem">
+        Buy Now
+      </button>
+
+      <div class="shipping-info">
+        <h4>🚚 Shipping Options</h4>
+        <div class="ship-option">
+          <span>Standard — PTT Turkish Cargo</span>
+          <span>${p.price >= 50 ? '<span class="ship-free">FREE</span>' : '£2.99'}</span>
+        </div>
+        <div class="ship-option">
+          <span>Priority — UPS Express</span>
+          <span>£15.00</span>
+        </div>
+        ${p.price < 50 ? '<div style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem">Add £' + (50 - p.price).toFixed(2) + ' more for free shipping!</div>' : '<div style="font-size:.75rem;color:var(--success);margin-top:.5rem">✓ This item qualifies for free shipping!</div>'}
+      </div>
+    </div>`;
+}
+
+function selectColor(c) {
+  selectedColor = c;
+  document.getElementById('colour-label').textContent = c;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.toggle('active', d.dataset.color === c));
+}
+function selectSize(s) {
+  selectedSize = s;
+  document.querySelectorAll('.size-opt').forEach(b => b.classList.toggle('active', b.textContent === s));
+}
+function changeQty(delta) {
+  qty = Math.max(1, qty + delta);
+  document.getElementById('qty-display').textContent = qty;
+}
+function handleAddToCart() {
+  if (!selectedSize) { showToast('Please select a size', 'error'); return; }
+  addToCart(currentProduct.id, selectedSize, selectedColor, qty);
+}
+function renderRelated() {
+  const related = products.filter(p => p.active !== false && p.id !== currentProduct.id && p.category === currentProduct.category).slice(0, 4);
+  document.getElementById('related-grid').innerHTML = related.map(p => renderProductCard(p)).join('');
+}
+</script>
+</body>
+</html>

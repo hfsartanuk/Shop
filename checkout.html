@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout — London Outlet Hisaronu Online Shopping</title>
+<link rel="stylesheet" href="css/style.css">
+<!-- PayPal SDK: Replace YOUR_PAYPAL_CLIENT_ID with your real Client ID -->
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=GBP&intent=capture" data-sdk-integration-source="button-factory"></script>
+</head>
+<body>
+<div class="shipping-banner">🚚 FREE SHIPPING on orders over £50 | Standard: £2.99 | UPS Priority: £15</div>
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo-wrap">
+    <div class="logo-pattern">
+      <div class="logo-text-london">LONDON</div>
+      <div class="logo-text-outlet">OUTLET</div>
+    </div>
+  </a>
+  <div class="nav-links"><a href="index.html">Home</a><a href="shop.html">Shop</a></div>
+  <div class="nav-actions">
+    <button class="cart-btn" onclick="window.location='cart.html'">🛒 Cart <span class="cart-count" id="cart-count" style="display:none">0</span></button>
+  </div>
+</nav>
+
+<div class="container" style="padding:2rem">
+  <h1 style="font-size:1.8rem;font-weight:900;margin-bottom:1.5rem">Checkout</h1>
+  <div class="checkout-layout">
+    <!-- FORM -->
+    <div class="checkout-form">
+      <div class="form-section" style="margin-bottom:1.5rem">
+        <h3>📦 Delivery Information</h3>
+        <div class="form-row">
+          <div class="form-group"><label>First Name *</label><input type="text" id="fname" placeholder="John" required></div>
+          <div class="form-group"><label>Last Name *</label><input type="text" id="lname" placeholder="Smith" required></div>
+        </div>
+        <div class="form-group"><label>Email Address *</label><input type="email" id="email" placeholder="john@example.com" required></div>
+        <div class="form-group"><label>Phone Number</label><input type="tel" id="phone" placeholder="+44 7700 900000"></div>
+        <div class="form-group"><label>Address Line 1 *</label><input type="text" id="addr1" placeholder="123 High Street" required></div>
+        <div class="form-group"><label>Address Line 2</label><input type="text" id="addr2" placeholder="Flat 4B (optional)"></div>
+        <div class="form-row">
+          <div class="form-group"><label>City *</label><input type="text" id="city" placeholder="London" required></div>
+          <div class="form-group"><label>Postcode *</label><input type="text" id="postcode" placeholder="SW1A 1AA" required></div>
+        </div>
+        <div class="form-group">
+          <label>Country *</label>
+          <select id="country">
+            <option value="GB" selected>🇬🇧 United Kingdom</option>
+            <option value="US">🇺🇸 United States</option>
+            <option value="DE">🇩🇪 Germany</option>
+            <option value="FR">🇫🇷 France</option>
+            <option value="TR">🇹🇷 Turkey</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>🚚 Shipping Method</h3>
+        <div class="shipping-options">
+          <label class="shipping-opt-card selected" id="ship-standard-card">
+            <input type="radio" name="shipping" value="standard" checked onchange="updateShipping()">
+            <div class="shipping-opt-info">
+              <div class="shipping-opt-name">Standard Shipping</div>
+              <div class="shipping-opt-sub">PTT Turkish Cargo · 5–10 business days</div>
+            </div>
+            <div class="shipping-opt-price" id="standard-price">£2.99</div>
+          </label>
+          <label class="shipping-opt-card" id="ship-priority-card">
+            <input type="radio" name="shipping" value="priority" onchange="updateShipping()">
+            <div class="shipping-opt-info">
+              <div class="shipping-opt-name">Priority Shipping ⚡</div>
+              <div class="shipping-opt-sub">UPS Express · 2–4 business days</div>
+            </div>
+            <div class="shipping-opt-price">£15.00</div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY + PAYPAL -->
+    <div>
+      <div class="order-summary">
+        <h3>Order Summary</h3>
+        <div id="order-items"></div>
+        <div class="summary-row"><span>Subtotal</span><span id="sum-subtotal">£0.00</span></div>
+        <div class="summary-row"><span>Shipping</span><span id="sum-shipping">£2.99</span></div>
+        <div class="summary-row summary-total"><span>Total</span><span id="sum-total">£0.00</span></div>
+        <div style="margin-top:1.5rem;padding:1rem;background:var(--dark3);border-radius:8px;margin-bottom:.5rem">
+          <div style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-bottom:.8rem">🔒 Secure payment via PayPal</div>
+          <div id="paypal-button-container"></div>
+          <div id="paypal-placeholder" style="text-align:center;color:var(--text-muted);font-size:.8rem;padding:1rem">
+            ⚠️ PayPal not configured yet.<br>See admin panel to set up.
+          </div>
+        </div>
+        <p style="font-size:.72rem;color:var(--text-muted);text-align:center">You'll be redirected to PayPal to complete your payment securely.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer><div class="footer-bottom">© 2026 London Outlet Hisaronu Online Shopping. All rights reserved.</div></footer>
+
+<script src="js/app.js"></script>
+<script>
+let shippingMethod = 'standard';
+
+function initPage() {
+  if (cart.length === 0) { window.location = 'cart.html'; return; }
+  renderSummary();
+  initPayPal();
+  document.querySelectorAll('input[name=shipping]').forEach(r => r.addEventListener('change', () => {
+    shippingMethod = r.value;
+    document.getElementById('ship-standard-card').classList.toggle('selected', shippingMethod === 'standard');
+    document.getElementById('ship-priority-card').classList.toggle('selected', shippingMethod === 'priority');
+    renderSummary();
+  }));
+}
+
+function renderSummary() {
+  const sub = getCartTotal();
+  const ship = calcShipping(sub, shippingMethod);
+  const total = sub + ship;
+  document.getElementById('standard-price').textContent = sub >= 50 ? 'FREE' : '£2.99';
+  document.getElementById('sum-subtotal').textContent = '£' + sub.toFixed(2);
+  document.getElementById('sum-shipping').textContent = ship === 0 ? 'FREE' : '£' + ship.toFixed(2);
+  document.getElementById('sum-total').textContent = '£' + total.toFixed(2);
+  document.getElementById('order-items').innerHTML = cart.map(i =>
+    `<div class="summary-row"><span style="font-size:.82rem">${i.name} ×${i.qty} <span style="color:var(--text-muted)">${i.size}/${i.color}</span></span><span>£${(i.price*i.qty).toFixed(2)}</span></div>`
+  ).join('');
+}
+
+function getFormData() {
+  return {
+    fname: document.getElementById('fname').value.trim(),
+    lname: document.getElementById('lname').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    addr1: document.getElementById('addr1').value.trim(),
+    addr2: document.getElementById('addr2').value.trim(),
+    city: document.getElementById('city').value.trim(),
+    postcode: document.getElementById('postcode').value.trim(),
+    country: document.getElementById('country').value
+  };
+}
+
+function validateForm() {
+  const d = getFormData();
+  if (!d.fname || !d.lname || !d.email || !d.addr1 || !d.city || !d.postcode) {
+    showToast('Please fill in all required fields', 'error');
+    return false;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) {
+    showToast('Please enter a valid email address', 'error');
+    return false;
+  }
+  return true;
+}
+
+function initPayPal() {
+  if (typeof paypal === 'undefined') {
+    // PayPal not configured
+    document.getElementById('paypal-placeholder').style.display = 'block';
+    return;
+  }
+  document.getElementById('paypal-placeholder').style.display = 'none';
+  paypal.Buttons({
+    style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
+    createOrder: function(data, actions) {
+      if (!validateForm()) return;
+      const sub = getCartTotal();
+      const ship = calcShipping(sub, shippingMethod);
+      const total = (sub + ship).toFixed(2);
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            value: total,
+            currency_code: 'GBP',
+            breakdown: {
+              item_total: { value: sub.toFixed(2), currency_code: 'GBP' },
+              shipping: { value: ship.toFixed(2), currency_code: 'GBP' }
+            }
+          },
+          items: cart.map(i => ({
+            name: `${i.name} (${i.size}/${i.color})`,
+            quantity: String(i.qty),
+            unit_amount: { value: i.price.toFixed(2), currency_code: 'GBP' },
+            category: 'PHYSICAL_GOODS'
+          })),
+          shipping: {
+            name: { full_name: getFormData().fname + ' ' + getFormData().lname },
+            address: {
+              address_line_1: getFormData().addr1,
+              address_line_2: getFormData().addr2,
+              admin_area_2: getFormData().city,
+              postal_code: getFormData().postcode,
+              country_code: getFormData().country
+            }
+          }
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(function(details) {
+        // Save order to localStorage
+        const order = {
+          id: details.id,
+          date: new Date().toISOString(),
+          customer: getFormData(),
+          items: cart,
+          subtotal: getCartTotal(),
+          shipping: calcShipping(getCartTotal(), shippingMethod),
+          shippingMethod,
+          total: getCartTotal() + calcShipping(getCartTotal(), shippingMethod),
+          status: 'paid'
+        };
+        const orders = JSON.parse(localStorage.getItem('lo_orders') || '[]');
+        orders.unshift(order);
+        localStorage.setItem('lo_orders', JSON.stringify(orders));
+        // Clear cart
+        cart = [];
+        saveCart();
+        window.location = 'success.html?order=' + details.id;
+      });
+    },
+    onError: function(err) {
+      showToast('Payment error. Please try again.', 'error');
+      console.error(err);
+    }
+  }).render('#paypal-button-container');
+}
+
+function updateShipping() { renderSummary(); }
+</script>
+</body>
+</html>
