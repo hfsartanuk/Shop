@@ -2,15 +2,14 @@
 let products = [];
 let cart = JSON.parse(localStorage.getItem('lo_cart') || '[]');
 
-const PAYPAL_CLIENT_ID = 'YOUR_PAYPAL_CLIENT_ID'; // Replace with your PayPal Client ID
-const FREE_SHIPPING_THRESHOLD = 50;
-const STANDARD_SHIPPING_COST = 2.99;
-const PRIORITY_SHIPPING_COST = 15.00;
+const FREE_SHIPPING_THRESHOLD = 0;      // Standard shipping always FREE
+const STANDARD_SHIPPING_COST = 0;
+const PRIORITY_SHIPPING_COST = 19.99;
+const PRIORITY_FREE_THRESHOLD = 200;    // Priority free over £200
 
 // ── LOAD PRODUCTS ──────────────────────────────────────────────
 async function loadProducts() {
   try {
-    // Try admin-saved products first, then fallback to JSON file
     const saved = localStorage.getItem('lo_products');
     if (saved) { products = JSON.parse(saved); return; }
     const res = await fetch('../data/products.json');
@@ -56,14 +55,13 @@ function updateCartCount() {
 
 // ── SHIPPING ──────────────────────────────────────────────────
 function calcShipping(subtotal, method = 'standard') {
-  if (method === 'priority') return PRIORITY_SHIPPING_COST;
-  return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST;
+  if (method === 'priority') return subtotal >= PRIORITY_FREE_THRESHOLD ? 0 : PRIORITY_SHIPPING_COST;
+  return 0; // Standard always free
 }
 
 function getShippingLabel(method, subtotal) {
-  if (method === 'priority') return '£15.00 — UPS Priority';
-  if (subtotal >= FREE_SHIPPING_THRESHOLD) return 'FREE — PTT Turkish Cargo';
-  return '£2.99 — PTT Turkish Cargo';
+  if (method === 'priority') return subtotal >= PRIORITY_FREE_THRESHOLD ? 'FREE — UPS/DHL' : '£19.99 — UPS/DHL Priority';
+  return 'FREE — PTT Standard';
 }
 
 // ── TOAST ──────────────────────────────────────────────────────
