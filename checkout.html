@@ -4,11 +4,10 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Checkout — London Outlet Hisaronu Online Shopping</title>
 <link rel="stylesheet" href="css/style.css">
-<!-- PayPal SDK: Replace YOUR_PAYPAL_CLIENT_ID with your real Client ID -->
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=GBP&intent=capture" data-sdk-integration-source="button-factory"></script>
+<!-- PayPal SDK REMOVED - WhatsApp checkout is used instead -->
 </head>
 <body>
-<div class="shipping-banner">🚚 FREE SHIPPING on orders over £50 | Standard: £2.99 | UPS Priority: £15</div>
+<div class="shipping-banner">🚚 FREE Standard Shipping (1–4 weeks) | FREE Priority (0–2 weeks) over £200</div>
 <nav class="navbar">
   <a href="index.html" class="navbar-logo-wrap">
     <div class="logo-pattern">
@@ -34,7 +33,7 @@
           <div class="form-group"><label>Last Name *</label><input type="text" id="lname" placeholder="Smith" required></div>
         </div>
         <div class="form-group"><label>Email Address *</label><input type="email" id="email" placeholder="john@example.com" required></div>
-        <div class="form-group"><label>Phone Number</label><input type="tel" id="phone" placeholder="+44 7700 900000"></div>
+        <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" placeholder="+44 7700 900000"></div>
         <div class="form-group"><label>Address Line 1 *</label><input type="text" id="addr1" placeholder="123 High Street" required></div>
         <div class="form-group"><label>Address Line 2</label><input type="text" id="addr2" placeholder="Flat 4B (optional)"></div>
         <div class="form-row">
@@ -60,39 +59,66 @@
           <label class="shipping-opt-card selected" id="ship-standard-card">
             <input type="radio" name="shipping" value="standard" checked onchange="updateShipping()">
             <div class="shipping-opt-info">
-              <div class="shipping-opt-name">Standard Shipping</div>
-              <div class="shipping-opt-sub">PTT Turkish Cargo · 5–10 business days</div>
+              <div class="shipping-opt-name">Standard Shipping (PTT)</div>
+              <div class="shipping-opt-sub">1–4 weeks delivery</div>
             </div>
-            <div class="shipping-opt-price" id="standard-price">£2.99</div>
+            <div class="shipping-opt-price" id="standard-price">FREE</div>
           </label>
           <label class="shipping-opt-card" id="ship-priority-card">
             <input type="radio" name="shipping" value="priority" onchange="updateShipping()">
             <div class="shipping-opt-info">
-              <div class="shipping-opt-name">Priority Shipping ⚡</div>
-              <div class="shipping-opt-sub">UPS Express · 2–4 business days</div>
+              <div class="shipping-opt-name">Priority Shipping (UPS/DHL) ⚡</div>
+              <div class="shipping-opt-sub">0–2 weeks delivery</div>
             </div>
-            <div class="shipping-opt-price">£15.00</div>
+            <div class="shipping-opt-price" id="priority-price">£19.99</div>
           </label>
         </div>
       </div>
     </div>
 
-    <!-- SUMMARY + PAYPAL -->
+    <!-- SUMMARY + BUTTONS -->
     <div>
       <div class="order-summary">
         <h3>Order Summary</h3>
         <div id="order-items"></div>
         <div class="summary-row"><span>Subtotal</span><span id="sum-subtotal">£0.00</span></div>
-        <div class="summary-row"><span>Shipping</span><span id="sum-shipping">£2.99</span></div>
+        <div class="summary-row"><span>Shipping</span><span id="sum-shipping">FREE</span></div>
         <div class="summary-row summary-total"><span>Total</span><span id="sum-total">£0.00</span></div>
+
         <div style="margin-top:1.5rem;padding:1rem;background:var(--dark3);border-radius:8px;margin-bottom:.5rem">
-          <div style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-bottom:.8rem">🔒 Secure payment via PayPal</div>
-          <div id="paypal-button-container"></div>
-          <div id="paypal-placeholder" style="text-align:center;color:var(--text-muted);font-size:.8rem;padding:1rem">
-            ⚠️ PayPal not configured yet.<br>See admin panel to set up.
-          </div>
+          <div style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-bottom:.8rem">🔒 Secure checkout</div>
+
+          <!-- PayPal-styled button → WhatsApp -->
+          <button
+            id="paypal-whatsapp-btn"
+            onclick="sendWhatsAppOrder()"
+            style="width:100%;background:#FFC439;color:#003087;border:none;border-radius:4px;height:50px;font-size:1rem;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.2s;"
+            onmouseover="this.style.background='#F0B429'"
+            onmouseout="this.style.background='#FFC439'"
+          >
+            <svg height="20" viewBox="0 0 101 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.237 2.506H5.82a.872.872 0 00-.862.737L2.248 23.276a.524.524 0 00.517.606h3.24a.872.872 0 00.862-.737l.655-4.152a.872.872 0 01.862-.737h2.06c4.286 0 6.76-2.074 7.41-6.186.292-1.798.012-3.21-.83-4.2-.925-1.087-2.567-1.364-4.787-1.364zm.751 6.098c-.356 2.335-2.14 2.335-3.867 2.335h-.983l.689-4.363a.524.524 0 01.517-.443h.451c1.176 0 2.285 0 2.857.67.342.4.447.995.336 1.801zM32.956 8.526H29.7a.524.524 0 00-.517.443l-.133.843-.21-.305c-.652-.946-2.106-1.262-3.557-1.262-3.328 0-6.172 2.521-6.724 6.057-.288 1.764.121 3.449 1.124 4.625.92 1.08 2.234 1.53 3.8 1.53 2.683 0 4.172-1.723 4.172-1.723l-.134.838a.524.524 0 00.517.606h2.924a.872.872 0 00.862-.737l1.754-11.11a.524.524 0 00-.522-.605zm-4.526 5.86c-.29 1.72-1.655 2.876-3.394 2.876-.873 0-1.571-.28-2.019-.812-.445-.528-.612-1.28-.472-2.117.272-1.705 1.659-2.896 3.372-2.896.854 0 1.548.283 2.004.819.459.54.638 1.297.509 2.13zM49.578 8.526h-3.27a.874.874 0 00-.722.383l-4.166 6.134-1.765-5.895a.874.874 0 00-.837-.622h-3.212a.524.524 0 00-.497.694l3.325 9.758-3.127 4.414a.524.524 0 00.428.824h3.267a.872.872 0 00.719-.378l10.044-14.5a.524.524 0 00-.427-.812h-.06z" fill="#003087"/>
+              <path d="M59.552 2.506h-6.417a.872.872 0 00-.862.737l-2.71 17.175a.524.524 0 00.517.606h3.476a.611.611 0 00.603-.516l.77-4.873a.872.872 0 01.862-.737h2.059c4.287 0 6.761-2.074 7.41-6.186.293-1.798.013-3.21-.829-4.2-.925-1.087-2.567-1.364-4.879-1.006zm.752 6.098c-.356 2.335-2.14 2.335-3.867 2.335h-.983l.689-4.363a.524.524 0 01.517-.443h.451c1.176 0 2.285 0 2.857.67.342.4.447.995.336 1.801zM80.27 8.526h-3.255a.524.524 0 00-.517.443l-.133.843-.211-.305c-.651-.946-2.105-1.262-3.557-1.262-3.327 0-6.171 2.521-6.723 6.057-.288 1.764.121 3.449 1.124 4.625.92 1.08 2.234 1.53 3.8 1.53 2.683 0 4.172-1.723 4.172-1.723l-.134.838a.524.524 0 00.517.606h2.924a.872.872 0 00.862-.737l1.754-11.11a.524.524 0 00-.522-.605zm-4.527 5.86c-.289 1.72-1.654 2.876-3.393 2.876-.873 0-1.571-.28-2.019-.812-.445-.528-.612-1.28-.472-2.117.272-1.705 1.659-2.896 3.372-2.896.854 0 1.548.283 2.004.819.459.54.638 1.297.509 2.13zM83.827 2.989l-2.749 17.475a.524.524 0 00.517.605h2.796a.872.872 0 00.862-.737l2.711-17.175a.524.524 0 00-.517-.606h-3.103a.524.524 0 00-.517.438z" fill="#009CDE"/>
+            </svg>
+            Pay with PayPal
+          </button>
+
+          <!-- Divider -->
+          <div style="text-align:center;color:var(--text-muted);font-size:.75rem;margin:.75rem 0">— or —</div>
+
+          <!-- WhatsApp button -->
+          <button
+            id="whatsapp-btn"
+            onclick="sendWhatsAppOrder()"
+            style="width:100%;background:#25D366;color:#fff;border:none;border-radius:25px;height:50px;font-size:1rem;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background 0.2s;"
+            onmouseover="this.style.background='#1ebe5d'"
+            onmouseout="this.style.background='#25D366'"
+          >
+            <svg style="width:20px;height:20px" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            Order via WhatsApp
+          </button>
         </div>
-        <p style="font-size:.72rem;color:var(--text-muted);text-align:center">You'll be redirected to PayPal to complete your payment securely.</p>
+        <p style="font-size:.72rem;color:var(--text-muted);text-align:center">Instant support &amp; secure payment confirmation via WhatsApp.</p>
       </div>
     </div>
   </div>
@@ -104,10 +130,10 @@
 <script>
 let shippingMethod = 'standard';
 
-function initPage() {
+async function initPage() {
   if (cart.length === 0) { window.location = 'cart.html'; return; }
   renderSummary();
-  initPayPal();
+  if (typeof initFirebase === 'function') await initFirebase();
   document.querySelectorAll('input[name=shipping]').forEach(r => r.addEventListener('change', () => {
     shippingMethod = r.value;
     document.getElementById('ship-standard-card').classList.toggle('selected', shippingMethod === 'standard');
@@ -120,7 +146,8 @@ function renderSummary() {
   const sub = getCartTotal();
   const ship = calcShipping(sub, shippingMethod);
   const total = sub + ship;
-  document.getElementById('standard-price').textContent = sub >= 50 ? 'FREE' : '£2.99';
+  document.getElementById('standard-price').textContent = 'FREE';
+  document.getElementById('priority-price').textContent = sub >= 200 ? 'FREE' : '£19.99';
   document.getElementById('sum-subtotal').textContent = '£' + sub.toFixed(2);
   document.getElementById('sum-shipping').textContent = ship === 0 ? 'FREE' : '£' + ship.toFixed(2);
   document.getElementById('sum-total').textContent = '£' + total.toFixed(2);
@@ -145,88 +172,80 @@ function getFormData() {
 
 function validateForm() {
   const d = getFormData();
-  if (!d.fname || !d.lname || !d.email || !d.addr1 || !d.city || !d.postcode) {
-    showToast('Please fill in all required fields', 'error');
-    return false;
+  const required = {
+    fname: 'First Name',
+    lname: 'Last Name',
+    email: 'Email Address',
+    phone: 'Phone Number',
+    addr1: 'Address',
+    city: 'City',
+    postcode: 'Postcode'
+  };
+  for (let key in required) {
+    if (!d[key] || d[key].length < 2) {
+      showToast(`Please enter your ${required[key]}`, 'error');
+      const el = document.getElementById(key);
+      if (el) { el.focus(); el.style.borderColor = 'var(--red)'; }
+      return false;
+    } else {
+      const el = document.getElementById(key);
+      if (el) el.style.borderColor = 'var(--border)';
+    }
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) {
+  if (!d.email.includes('@')) {
     showToast('Please enter a valid email address', 'error');
     return false;
   }
   return true;
 }
 
-function initPayPal() {
-  if (typeof paypal === 'undefined') {
-    // PayPal not configured
-    document.getElementById('paypal-placeholder').style.display = 'block';
-    return;
-  }
-  document.getElementById('paypal-placeholder').style.display = 'none';
-  paypal.Buttons({
-    style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
-    createOrder: function(data, actions) {
-      if (!validateForm()) return;
-      const sub = getCartTotal();
-      const ship = calcShipping(sub, shippingMethod);
-      const total = (sub + ship).toFixed(2);
-      return actions.order.create({
-        purchase_units: [{
-          amount: {
-            value: total,
-            currency_code: 'GBP',
-            breakdown: {
-              item_total: { value: sub.toFixed(2), currency_code: 'GBP' },
-              shipping: { value: ship.toFixed(2), currency_code: 'GBP' }
-            }
-          },
-          items: cart.map(i => ({
-            name: `${i.name} (${i.size}/${i.color})`,
-            quantity: String(i.qty),
-            unit_amount: { value: i.price.toFixed(2), currency_code: 'GBP' },
-            category: 'PHYSICAL_GOODS'
-          })),
-          shipping: {
-            name: { full_name: getFormData().fname + ' ' + getFormData().lname },
-            address: {
-              address_line_1: getFormData().addr1,
-              address_line_2: getFormData().addr2,
-              admin_area_2: getFormData().city,
-              postal_code: getFormData().postcode,
-              country_code: getFormData().country
-            }
-          }
-        }]
-      });
-    },
-    onApprove: function(data, actions) {
-      return actions.order.capture().then(function(details) {
-        // Save order to localStorage
-        const order = {
-          id: details.id,
-          date: new Date().toISOString(),
-          customer: getFormData(),
-          items: cart,
-          subtotal: getCartTotal(),
-          shipping: calcShipping(getCartTotal(), shippingMethod),
-          shippingMethod,
-          total: getCartTotal() + calcShipping(getCartTotal(), shippingMethod),
-          status: 'paid'
-        };
-        const orders = JSON.parse(localStorage.getItem('lo_orders') || '[]');
-        orders.unshift(order);
-        localStorage.setItem('lo_orders', JSON.stringify(orders));
-        // Clear cart
-        cart = [];
-        saveCart();
-        window.location = 'success.html?order=' + details.id;
-      });
-    },
-    onError: function(err) {
-      showToast('Payment error. Please try again.', 'error');
-      console.error(err);
-    }
-  }).render('#paypal-button-container');
+async function sendWhatsAppOrder() {
+  if (!validateForm()) return;
+
+  const btn = document.getElementById('paypal-whatsapp-btn');
+  const waBtn = document.getElementById('whatsapp-btn');
+  btn.disabled = true;
+  btn.textContent = 'Opening WhatsApp...';
+  if (waBtn) { waBtn.disabled = true; waBtn.textContent = 'Opening WhatsApp...'; }
+
+  const d = getFormData();
+  const sub = getCartTotal();
+  const ship = calcShipping(sub, shippingMethod);
+  const total = (sub + ship).toFixed(2);
+
+  let msg = `🛍️ *NEW ORDER - LONDON OUTLET*\n\n`;
+  msg += `📦 *ITEMS:*\n`;
+  cart.forEach(i => {
+    msg += `• *${i.name}*\n  Size: ${i.size} | Colour: ${i.color}\n  Qty: ${i.qty} | Price: £${(i.price * i.qty).toFixed(2)}\n\n`;
+  });
+  msg += `💰 *TOTAL: £${total}* (Shipping: ${ship === 0 ? 'FREE' : '£' + ship.toFixed(2)})\n`;
+  msg += `🚚 *METHOD:* ${shippingMethod === 'priority' ? 'Priority UPS/DHL (0–2 weeks)' : 'Standard PTT (1–4 weeks)'}\n\n`;
+  msg += `📍 *DELIVERY INFO:*\n`;
+  msg += `${d.fname} ${d.lname}\n${d.addr1}${d.addr2 ? ', ' + d.addr2 : ''}\n${d.city}, ${d.postcode}\n${d.country}\n📧 ${d.email}\n📱 ${d.phone}`;
+
+  const order = {
+    id: 'WA-' + Date.now(),
+    date: new Date().toISOString(),
+    customer: d,
+    items: cart,
+    subtotal: sub,
+    shipping: ship,
+    shippingMethod,
+    total: parseFloat(total),
+    status: 'whatsapp_pending'
+  };
+
+  if (typeof saveOrder === 'function') await saveOrder(order);
+
+  const orders = JSON.parse(localStorage.getItem('lo_orders') || '[]');
+  orders.unshift(order);
+  localStorage.setItem('lo_orders', JSON.stringify(orders));
+
+  cart = [];
+  saveCart();
+
+  const waUrl = `https://api.whatsapp.com/send?phone=905444454808&text=${encodeURIComponent(msg)}`;
+  window.location.href = waUrl;
 }
 
 function updateShipping() { renderSummary(); }
